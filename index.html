@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Correspondence · Name the Matching Part</title>
+<meta name="description" content="Given a congruence, name the corresponding point, side or angle.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231C7A63'/%3E%3Cpath d='M6 17.5 11 7l6 10.5z' fill='none' stroke='%23fff' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --paper:#FBF8F1; --card:#FFFFFF;
+  --ink:#1B2430; --ink-2:#3E4A5A; --muted:#7A8797;
+  --line:#E6DFD1; --line-2:#D8CFBD;
+  --teal:#1C7A63; --teal-soft:#E4F2EC; --teal-deep:#125544;
+  --amber:#C0762B; --amber-soft:#FBEEDA;
+  --good:#2E8B62; --good-soft:#E3F3EB;
+  --bad:#BF4A3F; --bad-soft:#FAE7E4;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang HK","Hiragino Sans","Noto Sans HK",Roboto,Arial,sans-serif;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Songti SC",serif;
+  --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+  --shadow:0 1px 2px rgba(27,36,48,.05),0 10px 30px -14px rgba(27,36,48,.22);
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;min-height:100vh;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(circle at 12% -10%,#FFFDF8 0%,transparent 45%),
+                   radial-gradient(circle at 100% 0%,#EFF6F3 0%,transparent 42%);
+  background-attachment:fixed;
+}
+button{font-family:inherit;font-size:inherit;cursor:pointer}
+::selection{background:#CFE9DF}
+
+.top{
+  position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:11px 22px;border-bottom:1px solid var(--line);
+  background:rgba(251,248,241,.92);backdrop-filter:blur(12px) saturate(1.3);
+}
+.brand{display:flex;align-items:center;gap:10px}
+.brand .mark{
+  width:34px;height:34px;border-radius:10px;background:var(--teal);color:#fff;
+  display:grid;place-items:center;font-size:16px;font-family:var(--serif);
+  box-shadow:0 4px 10px -6px rgba(27,36,48,.35);
+}
+.brand b{display:block;font-family:var(--serif);font-size:16px;line-height:1.1;letter-spacing:-.02em}
+.brand span{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.levels{display:flex;gap:3px;margin-left:auto;flex-wrap:wrap}
+.levels button{
+  border:1px solid #EBD3AE;background:#fff;color:#8A5416;border-radius:99px;
+  padding:5px 10px;font-size:11.5px;font-weight:700;transition:.15s;white-space:nowrap;
+}
+.levels button:hover{border-color:var(--amber);color:#7C4A12}
+.levels button.on{background:var(--amber);border-color:var(--amber);color:#fff}
+.modes{display:flex;gap:4px;flex-wrap:wrap}
+.modes button{
+  border:1px solid var(--line-2);background:#fff;color:var(--muted);border-radius:99px;
+  padding:5px 11px;font-size:11.5px;font-weight:700;transition:.15s;
+}
+.modes button:hover{border-color:var(--teal);color:var(--teal-deep)}
+.modes button.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.score{
+  font-size:11.5px;font-weight:700;color:var(--ink-2);border:1px solid var(--line);
+  background:#fff;border-radius:99px;padding:5px 11px;white-space:nowrap;
+}
+.score b{color:var(--teal);font-family:var(--mono)}
+
+main{max-width:740px;margin:0 auto;padding:26px 20px 60px}
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);
+  padding:32px 28px 26px;
+}
+.kicker{
+  font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:var(--muted);
+  text-align:center;margin-bottom:14px;
+}
+.statement{
+  font-family:var(--serif);font-size:clamp(26px,5.2vw,38px);line-height:1.35;text-align:center;
+  letter-spacing:.01em;color:var(--ink);user-select:none;white-space:nowrap;
+}
+.statement .tri{color:var(--ink-2);margin-right:1px}
+.statement .sym{color:var(--teal);padding:0 .16em;font-size:.86em}
+.statement .L{transition:background .18s,box-shadow .18s;border-radius:5px;padding:0 1px}
+.statement .L.mark{background:var(--amber-soft);box-shadow:inset 0 -2px 0 #E7C79A;color:#8A5416}
+.statement .L.ans{background:var(--teal-soft);box-shadow:inset 0 -2px 0 #A9D8BE;color:var(--teal-deep)}
+
+.ask{text-align:center;font-size:16px;color:var(--ink-2);margin:22px 0 0}
+.ask .m{font-family:var(--serif);font-style:italic;font-size:1.12em;color:var(--ink)}
+
+.answer-row{display:flex;justify-content:center;align-items:center;gap:9px;margin-top:16px;flex-wrap:wrap}
+#ans{
+  width:142px;height:56px;text-align:center;font-family:var(--mono);font-size:22px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;border:2px solid var(--line-2);border-radius:13px;
+  background:#fff;outline:none;transition:.15s;color:var(--ink);padding:0;
+}
+#ans:focus{border-color:var(--teal);box-shadow:0 0 0 4px var(--teal-soft)}
+#ans.ok{border-color:#8FCFAF;background:var(--good-soft);color:#1D5C41}
+#ans.no{border-color:#E4A79E;background:var(--bad-soft);color:#8E362C}
+.pfx{font-family:var(--serif);font-size:30px;color:var(--ink-2);line-height:1;margin-right:-2px}
+#check{
+  height:56px;padding:0 22px;border-radius:13px;border:1px solid var(--teal);background:var(--teal);
+  color:#fff;font-size:14px;font-weight:700;transition:.15s;
+}
+#check:hover{background:var(--teal-deep)}
+#check:disabled{opacity:.35;cursor:not-allowed}
+
+.fb{margin-top:16px;text-align:center;min-height:46px}
+.fb .ok-t{font-family:var(--serif);font-size:19px;color:var(--good);margin-bottom:3px}
+.fb .no-t{font-family:var(--serif);font-size:19px;color:var(--bad);margin-bottom:3px}
+.fb .why{font-size:13.5px;color:var(--ink-2);line-height:1.65}
+.fb .why b{font-family:var(--mono);font-size:12.5px;color:var(--ink)}
+.fb .nx{
+  margin-top:12px;border:1px solid var(--line-2);background:#fff;color:var(--ink-2);
+  border-radius:9px;padding:7px 15px;font-size:12.5px;font-weight:700;
+}
+.fb .nx:hover{border-color:var(--teal);color:var(--teal-deep)}
+
+.bar{height:4px;background:var(--line);border-radius:99px;margin-top:24px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--teal);border-radius:99px;transition:width .35s ease}
+.lvl-note{font-size:11.5px;color:var(--muted);text-align:center;margin-top:9px;font-style:italic}
+.count{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);font-weight:700;margin-top:7px;letter-spacing:.06em}
+
+.tools{display:flex;justify-content:center;gap:8px;margin-top:18px}
+.tools button{
+  border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:99px;
+  padding:6px 13px;font-size:11.5px;font-weight:700;
+}
+.tools button:hover{border-color:var(--teal);color:var(--teal-deep)}
+.hintbox{
+  margin-top:12px;background:var(--teal-soft);border:1px solid #CBE5DA;border-radius:11px;
+  padding:11px 14px;font-size:13px;color:var(--teal-deep);text-align:center;line-height:1.65;
+}
+.hintbox b{font-family:var(--mono)}
+
+.done{text-align:center;padding:14px 0 4px}
+.done .seal{width:54px;height:54px;margin:0 auto 14px;border-radius:50%;background:var(--good);display:grid;place-items:center}
+.done h2{font-family:var(--serif);font-size:24px;margin:0 0 6px}
+.done p{color:var(--ink-2);font-size:14px;margin:0 0 16px}
+.done .btn.ghost{background:#fff;color:var(--teal-deep);border-color:var(--line-2)}
+.done .btn.ghost:hover{background:var(--teal-soft);border-color:var(--teal)}
+.done .btn{
+  border:1px solid var(--teal);background:var(--teal);color:#fff;border-radius:10px;
+  padding:10px 20px;font-size:13.5px;font-weight:700;
+}
+
+@media (max-width:760px){ .levels{margin-left:0} }
+@media (max-width:620px){
+  main{padding:14px 10px 44px}
+  .card{padding:22px 14px 20px;border-radius:18px}
+  #ans{width:106px;height:52px;font-size:19px}
+  #check{height:52px;padding:0 15px;font-size:13px}
+  .brand span{display:none}
+  .modes button{padding:4px 9px;font-size:11px}
+}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.01ms !important}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand">
+    <div class="mark">≅</div>
+    <div><b>Correspondence</b><span>Name the matching part</span></div>
+  </div>
+  <div class="levels" id="levels"></div>
+  <div class="modes" id="modes"></div>
+  <div class="score" id="score"><b>0</b> correct</div>
+</div>
+<main><div class="card" id="card"></div></main>
+<script>
+/* ============================================================
+   Congruences to drill. Position i of the first name corresponds
+   to position i of the second — that is the whole idea.
+   ============================================================ */
+/* t = the level at which a statement starts appearing.
+   1: letters do not overlap — the gentle start
+   2: the two triangles share vertices (the realistic case)
+   3: polygons, where there are more positions to keep track of */
+const SETS=[
+  {a:'ABC',b:'XYZ',t:1}, {a:'PQR',b:'STU',t:1}, {a:'ABC',b:'PRQ',t:1}, {a:'DEF',b:'QRP',t:1},
+
+  {a:'ABC',b:'DAB',t:2}, {a:'ABC',b:'DCB',t:2}, {a:'ABC',b:'ADE',t:2},
+  {a:'ABD',b:'CDB',t:2}, {a:'ABD',b:'ACD',t:2}, {a:'PQR',b:'SRQ',t:2},
+  {a:'ABC',b:'AED',t:2}, {a:'ABE',b:'CBF',t:2}, {a:'ADE',b:'CDG',t:2},
+  {a:'DEF',b:'DGF',t:2}, {a:'BEG',b:'BFG',t:2},
+
+  {a:'ABCD',b:'PQRS',t:3}, {a:'ABCD',b:'PSRQ',t:3}, {a:'ABCDE',b:'QPTSR',t:3}
+];
+const ORD=['1st','2nd','3rd','4th','5th','6th'];
+/* full name of the angle at vertex i: prev, vertex, next — vertex in the middle */
+const angleName=(name,i)=>{const n=name.length;return name[(i+n-1)%n]+name[i]+name[(i+1)%n];};
+const GOAL=20;   /* correct answers needed to finish the challenge */
+/* difficulty ladder — the only scaffold is the highlight in the statement */
+const LEVELS=[
+  {id:1,name:'Guided',  hl:true,  hint:true,  timed:false},   // no shared vertices
+  {id:2,name:'Standard',hl:false, hint:true,  timed:false},   // shared vertices appear
+  {id:3,name:'Timed',   hl:false, hint:false, timed:true}     // + polygons, no hint
+];
+const LV=()=>LEVELS.find(l=>l.id===S.lvl)||LEVELS[0];
+
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const tri=n=>n===3?'△':'';
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+
+/* ---- question pool ---- */
+function poolFor(mode,lvl){
+  const max=lvl||S.lvl||1;
+  const out=[];
+  SETS.filter(s=>s.t<=max).forEach(({a,b})=>{
+    const n=a.length;
+    ['point','side','angle'].forEach(kind=>{
+      if(mode!=='mixed'&&mode!==kind+'s')return;
+      for(let i=0;i<n;i++){
+        out.push({a,b,kind,i,dir:'f'});
+        out.push({a,b,kind,i,dir:'b'});
+      }
+    });
+  });
+  return out;
+}
+
+/* ---- one question, resolved ---- */
+function partsOf(q){
+  const n=q.a.length, j=(q.i+1)%n;
+  const from=q.dir==='f'?q.a:q.b;
+  const to  =q.dir==='f'?q.b:q.a;
+  if(q.kind==='side')return {fromName:from,toName:to,idx:[q.i,j],ans:[to[q.i],to[j]]};
+  return {fromName:from,toName:to,idx:[q.i],ans:[to[q.i]]};
+}
+function answerText(q){
+  if(q.kind==='side'){const p=partsOf(q);return p.ans.join('');}
+  if(q.kind==='angle')return angleName(q.dir==='f'?q.b:q.a,q.i);
+  return q.dir==='f'?q.b[q.i]:q.a[q.i];
+}
+function questionText(q){
+  const p=partsOf(q), n=q.a.length;
+  const from=p.fromName, to=p.toName;
+  const label=q.kind==='point'?'point':q.kind==='side'?'side':'angle';
+  const what=q.kind==='side'
+    ? p.idx.map(i=>from[i]).join('')
+    : q.kind==='angle' ? '∠'+angleName(from,q.i) : from[q.i];
+  return `Which ${label} of ${tri(n)}${to} corresponds to <span class="m">${what}</span>?`;
+}
+function reasonText(q){
+  const p=partsOf(q), n=q.a.length, A=q.a, B=q.b;
+  if(q.kind==='side'){
+    const j=(q.i+1)%n;
+    const f=q.dir==='f';
+    const [f1,f2]=f?[A[q.i],A[j]]:[B[q.i],B[j]];
+    const [t1,t2]=f?[B[q.i],B[j]]:[A[q.i],A[j]];
+    return `<b>${f1}↔${t1}</b> and <b>${f2}↔${t2}</b>, so <b>${f1}${f2}</b> corresponds to <b>${t1}${t2}</b>.`;
+  }
+  const f=q.dir==='f';
+  const fv=f?A[q.i]:B[q.i], tv=f?B[q.i]:A[q.i];
+  const pos=ORD[q.i];
+  if(q.kind==='angle'){
+    const fromN=q.dir==='f'?A:B, toN=q.dir==='f'?B:A;
+    return `The angle at <b>${fv}</b> pairs with the angle at <b>${tv}</b>, so <b>∠${angleName(fromN,q.i)}</b> corresponds to <b>∠${angleName(toN,q.i)}</b>.`;
+  }
+  return `<b>${fv}</b> is the ${pos} letter of the first name, so it pairs with <b>${tv}</b>, the ${pos} letter of the second.`;
+}
+
+/* ---- statement with highlights ---- */
+function nameHTML(name,mark,ans){
+  return [...name].map((c,i)=>{
+    const cls=mark.includes(i)?'L mark':(ans.includes(i)?'L ans':'L');
+    return `<span class="${cls}">${c}</span>`;
+  }).join('');
+}
+function statementHTML(q,reveal){
+  const n=q.a.length, j=(q.i+1)%n;
+  const idx=q.kind==='side'?[q.i,j]:[q.i];
+  const show=LV().hl||reveal;
+  const markA=(show&&q.dir==='f')?idx:[], markB=(show&&q.dir==='b')?idx:[];
+  const ansA=reveal&&q.dir==='b'?idx:[], ansB=reveal&&q.dir==='f'?idx:[];
+  return `<div class="statement">
+    <span class="tri">${tri(n)}</span>${nameHTML(q.a,markA,ansA)}
+    <span class="sym">≅</span>
+    <span class="tri">${tri(n)}</span>${nameHTML(q.b,markB,ansB)}
+  </div>`;
+}
+
+/* ============================================================
+   State
+   ============================================================ */
+let S={mode:'mixed',lvl:1,q:[],goal:GOAL,ok:0,ans:0,streak:0,best:0,state:'ask',
+        hint:false,tried:false,t0:0,times:[],endless:false};
+
+function start(mode,lvl,endless){
+  const L=(lvl||S.lvl||1);
+  S={mode,lvl:L,q:shuffle(poolFor(mode,L)),goal:GOAL,ok:0,ans:0,streak:0,best:S.best,
+     state:'ask',hint:false,tried:false,t0:performance.now(),times:[],endless:!!endless};
+  render();
+}
+function cur(){return S.q[0];}
+
+/* ============================================================
+   Render
+   ============================================================ */
+function render(){
+  $('#levels').innerHTML=LEVELS.map(l=>
+    `<button class="${S.lvl===l.id?'on':''}" data-l="${l.id}" title="${l.name}">L${l.id} · ${l.name}</button>`).join('');
+  $$('#levels button').forEach(b=>{b.onclick=()=>start(S.mode,+b.dataset.l);});
+  $('#modes').innerHTML=[['points','Points'],['sides','Sides'],['angles','Angles'],['mixed','Mixed']]
+    .map(([k,l])=>`<button class="${S.mode===k?'on':''}" data-m="${k}">${l}</button>`).join('');
+  $$('#modes button').forEach(b=>{b.onclick=()=>start(b.dataset.m,S.lvl);});
+  $('#score').innerHTML=`<b>${S.ok}</b> correct`;
+
+  if(S.state==='done'){return renderDone();}
+
+  const q=cur(), reveal=S.state!=='ask';
+  $('#card').innerHTML=`
+    <div class="kicker">${S.endless?`Endless · ${S.ok} correct`:`Correct ${S.ok} of ${S.goal}`}</div>
+    ${statementHTML(q,reveal)}
+    <p class="ask">${questionText(q)}</p>
+    <div class="answer-row">
+      ${q.kind==='angle'?'<span class="pfx">∠</span>':''}
+      <input id="ans" autocomplete="off" autocapitalize="characters" spellcheck="false"
+             aria-label="your answer" ${reveal?'disabled':''}>
+      <button id="check" ${reveal?'disabled':''}>Check</button>
+    </div>
+    <div class="fb" id="fb"></div>
+    ${S.hint?`<div class="hintbox">Line the two names up <b>position by position</b>: the 1st letter with the 1st, the 2nd with the 2nd, the 3rd with the 3rd. A side joins two positions — so its partner joins the same two positions.</div>`:''}
+    ${S.endless?'':`<div class="bar"><i style="width:${Math.min(100,S.ok/S.goal*100).toFixed(1)}%"></i></div>`}
+    <div class="count"><span>${S.ans} answered</span><span>${S.endless?`${S.ok} correct`:`${S.ok} / ${S.goal}`} · streak ${S.streak}</span></div>
+    ${S.state==='ask'&&(LV().hint||S.endless)?`<div class="tools">
+      ${LV().hint?`<button id="hintBtn">${S.hint?'Hide hint':'Hint'}</button>`:''}
+      ${S.endless?`<button id="finishBtn">Finish</button>`:''}
+    </div>`:''}
+    ${!LV().hl&&S.state==='ask'?`<div class="lvl-note">No highlight at this level — find the part in the statement yourself.</div>`:''}`;
+
+  const inp=$('#ans');
+  if(S.state==='ask'){
+    if(!S.t0)S.t0=performance.now();
+    inp.focus();
+    inp.onkeydown=e=>{if(e.key==='Enter')check();};
+    inp.oninput=()=>inp.classList.remove('ok','no');
+    $('#check').onclick=check;
+    const hb=$('#hintBtn'); if(hb)hb.onclick=()=>{S.hint=!S.hint;render();};
+    const fb2=$('#finishBtn'); if(fb2)fb2.onclick=()=>{S.state='done';render();};
+  }else{
+    showFeedback();
+  }
+}
+
+function renderDone(){
+  const acc=S.ans?Math.round(S.ok/S.ans*100):0;
+  const avg=(LV().timed&&S.times.length)?` · average ${(S.times.reduce((a,b)=>a+b,0)/S.times.length).toFixed(1)} s`:'';
+  $('#card').innerHTML=`<div class="done">
+    <div class="seal"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5.5 5.5L20 6.5"/></svg></div>
+    <h2>${S.ok} correct</h2>
+    <p>You answered <b>${S.ans}</b> question${S.ans===1?'':'s'} — ${acc}% of them right. Best streak: ${S.best}${avg}.</p>
+    <button class="btn" id="again">New challenge</button>
+    <button class="btn ghost" id="endless" style="margin-left:8px">Endless mode</button>
+  </div>`;
+  $('#again').onclick=()=>start(S.mode,S.lvl,false);
+  $('#endless').onclick=()=>start(S.mode,S.lvl,true);
+}
+
+/* ============================================================
+   Check
+   ============================================================ */
+function normalise(v,q){
+  let s=v.toUpperCase().replace(/[^A-Z]/g,'');
+  if(q.kind==='side'&&s.length===2)s=[...s].sort().join('');
+  return s;
+}
+function check(){
+  if(S.state!=='ask')return;
+  const q=cur(), inp=$('#ans');
+  const raw=inp.value.trim();
+  if(!raw)return;
+  const secs=(performance.now()-S.t0)/1000;
+  const got=normalise(raw,q);
+  const want=answerText(q);
+  let ok;
+  if(q.kind==='side')ok=[...got].sort().join('')===[...want].sort().join('');
+  else if(q.kind==='angle')ok=got.length===3&&got[1]===want[1]&&[...got[0]+got[2]].sort().join('')===[...want[0]+want[2]].sort().join('');
+  else ok=got===want;
+
+  S.times.push(secs); S.ans++;
+  if(ok){
+    inp.classList.add('ok');
+    S.state='ok'; S.ok++; S.streak++; S.best=Math.max(S.best,S.streak);
+    $('#score').innerHTML=`<b>${S.ok}</b> correct`;
+    showFeedback();
+    if(!S.endless&&S.ok>=S.goal){ adv=setTimeout(()=>{S.state='done';render();},950); }
+    else { adv=setTimeout(advance,1100); }
+  }else{
+    inp.classList.add('no');
+    S.state='no'; S.streak=0; S.tried=true;
+    showFeedback();
+  }
+}
+let adv=null;
+function advance(){
+  if(S.state==='ask'||S.state==='done')return;
+  clearTimeout(adv); adv=null;
+  S.q.shift();
+  if(!S.q.length)S.q=shuffle(poolFor(S.mode,S.lvl));
+  S.state='ask'; S.tried=false; S.t0=performance.now(); render();
+}
+function showFeedback(){
+  const q=cur(), fb=$('#fb');
+  const tt=LV().timed&&S.times.length?`<div class="lvl-note">${S.times[S.times.length-1].toFixed(1)} s</div>`:'';
+  if(S.state==='ok'){
+    fb.innerHTML=`<div class="ok-t">Correct</div><div class="why">${reasonText(q)}</div>${tt}`;
+  }else if(S.state==='no'){
+    fb.innerHTML=`<div class="no-t">Not quite — it is <b style="font-family:var(--mono)">${answerText(q)}</b>.</div>
+      <div class="why">${reasonText(q)}</div>${tt}
+      <button class="nx" id="nx">Next →</button>`;
+    const nx=$('#nx'); if(nx)nx.onclick=advance;
+    const inp=$('#ans'); if(inp){inp.focus();inp.select();}
+  }
+}
+
+/* ============================================================
+   Wiring
+   ============================================================ */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&S.state!=='ask'){e.preventDefault();advance();}
+});
+start('mixed');
+</script>
+</body>
+</html>
